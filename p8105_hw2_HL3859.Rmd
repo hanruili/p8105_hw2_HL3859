@@ -94,6 +94,27 @@ trash_wheel =
 trash_wheel
 ```
 
+```{r}
+prof_trash_wheel = 
+  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", 
+             skip = 1) |>
+  select(-starts_with(".")) |>
+  filter(!is.na(Dumpster))
+
+prof_trash_wheel
+
+gwynnda_trash_wheel = 
+  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", 
+             skip = 1) |>
+  select(-starts_with(".")) |>
+  filter(!is.na(Dumpster))
+
+gwynnda_trash_wheel
+```
+
+
+
+
 
 
 
