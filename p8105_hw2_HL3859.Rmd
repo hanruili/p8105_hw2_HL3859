@@ -23,7 +23,66 @@ nyc_clean =
 nyc_clean
 ```
 
-The dataset contains `line` which shows 36 subway lines. `station_name` represents the names of the station. `station_latitude` and `station_longitude` represent the coordinates of the station. `route1` to `route11` show the subway routes served by the station, there are 11 routes. `entry` indicates whether entrance is allowed (TRUE/FALSE). `vending` indicates whether there is a vending machine (YES/NO). `entrance_type` is the type of entrance (e.g. `r unique(nyc_clean$entrance_type)`). `ada` inndicates whether the station is compliant with ADA standards (TRUE/FALSE).
+The dataset contains `line` which shows 36 subway lines. `station_name` represents the names of the station. `station_latitude` and `station_longitude` represent the coordinates of the station. `route1` to `route11` show the subway routes served by the station, there are 11 routes. `entry` indicates whether entrance is allowed (TRUE/FALSE). `vending` indicates whether there is a vending machine (YES/NO). `entrance_type` is the type of entrance (e.g. `r unique(nyc_clean$entrance_type)`). `ada` inndicates whether the station is compliant with ADA standards (TRUE/FALSE). I selected relevant columns from the dataset and converted the `entry` variable to a logical variable for easier analysis. After cleaning, the dataset has `r nrow(nyc_clean)` rows and `r ncol(nyc_clean)` columns. This dataset is tidy as each column represents a variable and each row represents a single observation (an entrance/exit).
+
+```{r}
+nyc_clean |>
+  distinct(line, station_name) |>
+  nrow()
+```
+
+- There are 465 distinct stations.
+
+```{r}
+nyc_clean |>
+  filter(ada == "TRUE") |>
+  distinct(line, station_name) |>
+  nrow()
+```
+
+- 84 stations are ADA compliant.
+
+```{r}
+nyc_clean |>
+  filter(vending == "NO") |>
+  summarise(proportion = mean(entry))
+```
+
+- 37.70% of station entrances / exits without vending allow entrance.
+
+```{r}
+nyc_routes = 
+  nyc_clean |>
+  mutate(across(starts_with("route"), as.character)) |>
+  pivot_longer(
+    route1:route11,
+    names_to = "route_name", 
+    values_to = "route_number") |>
+  filter(!is.na(route_number))
+
+nyc_routes
+
+stations_A =
+  nyc_routes |>
+  filter(route_number == "A") |>
+  distinct(line, station_name)
+
+nrow(stations_A)
+
+stations_A |>
+  inner_join(nyc_clean |> filter(ada == "TRUE"), by = c("line", "station_name")) |>
+  nrow()
+```
+
+- There are 60 distinct stations serve the A train.
+
+- Of the stations that serve the A train, 107 are ADA compliant.
+
+
+# Problem 2
+
+
+
 
 
 
