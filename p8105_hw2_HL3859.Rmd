@@ -97,8 +97,7 @@ trash_wheel
 
 ```{r}
 prof_trash_wheel = 
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", 
-             skip = 1) |>
+  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", skip = 1) |>
   select(-starts_with(".")) |>
   filter(!is.na(Dumpster)) |>
   mutate(Year = as.character(Year)) |>
@@ -107,8 +106,7 @@ prof_trash_wheel =
 prof_trash_wheel
 
 gwynnda_trash_wheel = 
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", 
-             skip = 1) |>
+  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", skip = 1) |>
   select(-starts_with(".")) |>
   filter(!is.na(Dumpster)) |>
   mutate(Year = as.character(Year)) |>
@@ -129,6 +127,29 @@ The combined dataset from the Mr. Trash Wheel, Professor Trash Wheel, and Gwynnd
 For Professor Trash Wheel, the total weight of trash collected across all available records is `r prof_trash_wheel |> summarize(total_weight = sum(weight, na.rm = TRUE)) |> pull(total_weight)` tons. 
 
 In June 2022, Gwynnda collected a total of `r gwynnda_trash_wheel |> filter(format(Date, "%Y-%m") == "2022-06") |> summarize(total_butts = sum(cigarette_butts, na.rm = TRUE)) |> pull(total_butts)` cigarette butts.
+
+
+# Problem 3
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+
+bakers =
+  read_csv("data/gbb_datasets/bakers.csv") |>
+  janitor::clean_names()
+
+bakes =
+  read_csv("data/gbb_datasets/bakes.csv") |>
+  janitor::clean_names()
+
+results =
+  read_csv("data/gbb_datasets/results.csv") |>
+  janitor::clean_names()
+
+
+```
 
 
 
