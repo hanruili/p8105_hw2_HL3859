@@ -1,0 +1,35 @@
+---
+title: "p8105_hw2_HL3859"
+author: "Hanrui Li"
+date: "2024-09-25"
+output: github_document
+---
+
+# Problem 1
+
+```{r}
+library(tidyverse)
+
+nyc = 
+  read_csv("NYC_Transit_Subway_Entrance_And_Exit_Data.csv") |>
+  janitor::clean_names()
+
+nyc_clean = 
+  nyc |>
+  select(line, station_name, station_latitude, station_longitude, route1:route11, 
+         entry, vending, entrance_type, ada) |>
+  mutate(entry = ifelse(entry == "YES", TRUE, FALSE))
+
+nyc_clean
+```
+
+The dataset contains `line` which shows 36 subway lines. `station_name` represents the names of the station. `station_latitude` and `station_longitude` represent the coordinates of the station. `route1` to `route11` show the subway routes served by the station, there are 11 routes. `entry` indicates whether entrance is allowed (TRUE/FALSE). `vending` indicates whether there is a vending machine (YES/NO). `entrance_type` is the type of entrance (e.g. `r unique(nyc_clean$entrance_type)`). `ada` inndicates whether the station is compliant with ADA standards (TRUE/FALSE).
+
+
+
+
+
+
+
+
+
