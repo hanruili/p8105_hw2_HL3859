@@ -99,7 +99,8 @@ prof_trash_wheel =
   read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", 
              skip = 1) |>
   select(-starts_with(".")) |>
-  filter(!is.na(Dumpster))
+  filter(!is.na(Dumpster)) |>
+  mutate(Year = as.character(Year))
 
 prof_trash_wheel
 
@@ -107,9 +108,17 @@ gwynnda_trash_wheel =
   read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", 
              skip = 1) |>
   select(-starts_with(".")) |>
-  filter(!is.na(Dumpster))
+  filter(!is.na(Dumpster)) |>
+  mutate(Year = as.character(Year))
 
 gwynnda_trash_wheel
+```
+
+```{r}
+total = 
+  bind_rows(trash_wheel, prof_trash_wheel, gwynnda_trash_wheel)
+
+total
 ```
 
 
