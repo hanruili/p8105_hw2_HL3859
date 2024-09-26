@@ -11,7 +11,7 @@ output: github_document
 library(tidyverse)
 
 nyc = 
-  read_csv("NYC_Transit_Subway_Entrance_And_Exit_Data.csv") |>
+  read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") |>
   janitor::clean_names()
 
 nyc_clean = 
@@ -81,6 +81,18 @@ stations_A |>
 
 # Problem 2
 
+```{r}
+library(readxl)
+library(dplyr)
+
+trash_wheel = 
+  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |>
+  select(-starts_with(".")) |>
+  filter(!is.na(Dumpster)) |>
+  mutate(`Sports Balls` = as.integer(round(`Sports Balls`)))
+
+trash_wheel
+```
 
 
 
