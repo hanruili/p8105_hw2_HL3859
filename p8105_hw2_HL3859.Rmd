@@ -167,7 +167,12 @@ final_data <- merged_data %>%
 
 write_csv(final_data, "data/gbb_datasets/final_data.csv")
 
+star_bakers <- merged_data |>
+  filter(Series >= 5 & result %in% c("STAR BAKER", "WINNER")) |>
+  select(Series, Episode, Baker, result) |>
+  arrange(Series, Episode)
 
+print(star_bakers)
 ```
 
 
