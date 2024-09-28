@@ -62,21 +62,20 @@ nyc_routes =
 
 nyc_routes
 
-stations_A =
-  nyc_routes |>
+nyc_routes |>
   filter(route_number == "A") |>
-  distinct(line, station_name)
+  distinct(line, station_name) |>
+  nrow()
 
-nrow(stations_A)
-
-stations_A |>
-  inner_join(nyc_clean |> filter(ada == "TRUE"), by = c("line", "station_name")) |>
+nyc_routes |>
+  filter(route_number == "A", ada == "TRUE") |>
+  distinct(line, station_name) |>
   nrow()
 ```
 
 - There are 60 distinct stations serve the A train.
 
-- Of the stations that serve the A train, 107 are ADA compliant.
+- Of the stations that serve the A train, 17 are ADA compliant.
 
 
 # Problem 2
@@ -87,10 +86,16 @@ library(dplyr)
 
 trash_wheel = 
   read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |>
-  select(-starts_with(".")) |>
-  filter(!is.na(Dumpster)) |>
-  mutate(`Sports Balls` = as.integer(round(`Sports Balls`))) |>
-  rename(weight = "Weight (tons)", sports_balls = "Sports Balls", cigarette_butts = "Cigarette Butts")
+  select(dumpster = `Dumpster`, month = `Month`, year = `Year`, date = `Date`,
+      weight_tons = `Weight (tons)`, volume_cubic_yards = `Volume (cubic yards)`,
+      plastic_bottles = `Plastic Bottles`, polystyrene = `Polystyrene`,
+      cigarette_butts = `Cigarette Butts`, glass_bottles = `Glass Bottles`,
+      plastic_bags = `Plastic Bags`, wrappers = `Wrappers`,
+      sports_balls = `Sports Balls`, homes_powered = `Homes Powered*`) |>
+  filter(!is.na(dumpster)) |>
+  mutate(sports_balls = as.integer(round(sports_balls)), 
+         homes_powered = (weight_tons * 500 / 30),
+         trash_wheel = "Mr. Trash Wheel")
 
 trash_wheel
 ```
@@ -98,19 +103,26 @@ trash_wheel
 ```{r}
 prof_trash_wheel = 
   read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", skip = 1) |>
-  select(-starts_with(".")) |>
-  filter(!is.na(Dumpster)) |>
-  mutate(Year = as.character(Year)) |>
-  rename(weight = "Weight (tons)", cigarette_butts = "Cigarette Butts")
-
+  select(dumpster = `Dumpster`, month = `Month`, year = `Year`, date = `Date`,
+      weight_tons = `Weight (tons)`, volume_cubic_yards = `Volume (cubic yards)`,
+      plastic_bottles = `Plastic Bottles`, polystyrene = `Polystyrene`,
+      cigarette_butts = `Cigarette Butts`, glass_bottles = `Glass Bottles`,
+      plastic_bags = `Plastic Bags`, wrappers = `Wrappers`,
+      homes_powered = `Homes Powered*`) |>
+  filter(!is.na(dumpster)) |>
+  mutate(year = as.character(year))
+  
 prof_trash_wheel
 
 gwynnda_trash_wheel = 
   read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", skip = 1) |>
-  select(-starts_with(".")) |>
-  filter(!is.na(Dumpster)) |>
-  mutate(Year = as.character(Year)) |>
-  rename(weight = "Weight (tons)", cigarette_butts = "Cigarette Butts")
+  select(dumpster = `Dumpster`, month = `Month`, year = `Year`, date = `Date`,
+      weight_tons = `Weight (tons)`, volume_cubic_yards = `Volume (cubic yards)`,
+      plastic_bottles = `Plastic Bottles`, polystyrene = `Polystyrene`,
+      cigarette_butts = `Cigarette Butts`, plastic_bags = `Plastic Bags`, 
+      wrappers = `Wrappers`, homes_powered = `Homes Powered*`) |>
+  filter(!is.na(dumpster)) |>
+  mutate(year = as.character(year))
 
 gwynnda_trash_wheel
 ```
@@ -122,11 +134,11 @@ combine =
 combine
 ```
 
-The combined dataset from the Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda trash wheels includes a total of `r nrow(combine)` observations, each representing a dumpster filled with trash removed from Baltimore's Inner Harbor. Key variables include the date (`Date`, e.g. `r combine$Date[1]`), the weight of trash collected (`Weight (tons)`, e.g. `r combine$weight[1]` tons), and the number of sports balls recovered (`Sports Balls`, e.g. `r combine$sports_balls[1]`). Additionally, the dataset tracks the number of cigarette butts collected (`Cigarette Butts`, e.g. `r combine$cigarette_butts[1]`). 
+The combined dataset from the Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda trash wheels includes a total of `r nrow(combine)` observations, each representing a dumpster filled with trash removed from Baltimore's Inner Harbor. Key variables include the date (`date`, e.g. `r combine$date[1]`), the weight of trash collected (`weight_tons)`, e.g. `r combine$weight_tons[1]` tons), and the number of sports balls recovered (`sports_balls`, e.g. `r combine$sports_balls[1]`). Additionally, the dataset tracks the number of cigarette butts collected (`cigarette_butts`, e.g. `r combine$cigarette_butts[1]`). 
 
-For Professor Trash Wheel, the total weight of trash collected across all available records is `r prof_trash_wheel |> summarize(total_weight = sum(weight, na.rm = TRUE)) |> pull(total_weight)` tons. 
+For Professor Trash Wheel, the total weight of trash collected across all available records is `r prof_trash_wheel |> summarize(total_weight = sum(weight_tons, na.rm = TRUE)) |> pull(total_weight)` tons. 
 
-In June 2022, Gwynnda collected a total of `r gwynnda_trash_wheel |> filter(format(Date, "%Y-%m") == "2022-06") |> summarize(total_butts = sum(cigarette_butts, na.rm = TRUE)) |> pull(total_butts)` cigarette butts.
+In June 2022, Gwynnda collected a total of `r gwynnda_trash_wheel |> filter(format(date, "%Y-%m") == "2022-06") |> summarize(total_butts = sum(cigarette_butts, na.rm = TRUE)) |> pull(total_butts)` cigarette butts.
 
 
 # Problem 3
@@ -144,13 +156,18 @@ bakes =
   read_csv("data/gbb_datasets/bakes.csv") |>
   janitor::clean_names()
 
+bakes
+
 results =
   read_csv("data/gbb_datasets/results.csv") |>
   janitor::clean_names()
 
-
+results
 ```
 
+```{r}
+
+```
 
 
 
