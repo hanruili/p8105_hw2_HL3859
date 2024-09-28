@@ -173,6 +173,26 @@ star_bakers <- merged_data |>
   arrange(Series, Episode)
 
 print(star_bakers)
+
+
+viewers_long <- viewers |>
+  pivot_longer(cols = starts_with("Series"), 
+               names_to = "Series", 
+               values_to = "Viewership") |>
+  mutate(Series = as.numeric(gsub("Series ", "", Series)))
+
+season_1_avg_viewership <- viewers_long |>
+  filter(Series == 1) |>
+  summarise(avg_viewership = mean(Viewership, na.rm = TRUE))
+
+season_5_avg_viewership <- viewers_long |>
+  filter(Series == 5) |>
+  summarise(avg_viewership = mean(Viewership, na.rm = TRUE))
+
+head(viewers_long, 10)
+
+print(season_1_avg_viewership)
+print(season_5_avg_viewership)
 ```
 
 
