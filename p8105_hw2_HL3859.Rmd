@@ -144,28 +144,13 @@ In June 2022, Gwynnda collected a total of `r gwynnda_trash_wheel |> filter(form
 # Problem 3
 
 ```{r}
-library(dplyr)
-library(tidyr)
-library(readr)
+library(tidyverse)
 
-bakers =
-  read_csv("data/gbb_datasets/bakers.csv") |>
-  janitor::clean_names()
+bakers <- read_csv("data/gbb_datasets/bakers.csv")
+bakes <- read_csv("data/gbb_datasets/bakes.csv")
+results <- read_csv("data/gbb_datasets/results.csv", skip = 2)
+viewers <- read_csv("data/gbb_datasets/viewers.csv")
 
-bakes =
-  read_csv("data/gbb_datasets/bakes.csv") |>
-  janitor::clean_names()
-
-bakes
-
-results =
-  read_csv("data/gbb_datasets/results.csv") |>
-  janitor::clean_names()
-
-results
-```
-
-```{r}
 
 ```
 
