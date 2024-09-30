@@ -137,7 +137,6 @@ combine
 The combined dataset from the Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda trash wheels includes a total of `r nrow(combine)` observations, each representing a dumpster filled with trash removed from Baltimore's Inner Harbor. Key variables include the date (`date`, e.g. `r combine$date[1]`), the weight of trash collected (`weight_tons)`, e.g. `r combine$weight_tons[1]` tons), and the number of sports balls recovered (`sports_balls`, e.g. `r combine$sports_balls[1]`). Additionally, the dataset tracks the number of cigarette butts collected (`cigarette_butts`, e.g. `r combine$cigarette_butts[1]`). 
 
 For Professor Trash Wheel, the total weight of trash collected across all available records is `r prof_trash_wheel |> summarize(total_weight = sum(weight_tons, na.rm = TRUE)) |> pull(total_weight)` tons. 
-
 In June 2022, Gwynnda collected a total of `r gwynnda_trash_wheel |> filter(format(date, "%Y-%m") == "2022-06") |> summarize(total_butts = sum(cigarette_butts, na.rm = TRUE)) |> pull(total_butts)` cigarette butts.
 
 
@@ -195,7 +194,7 @@ print(season_1_avg_viewership)
 print(season_5_avg_viewership)
 ```
 
-
+The average viewership in Season 1 is 2.77; in Season 2 is 10.0.
 
 
 
