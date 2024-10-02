@@ -7,7 +7,9 @@ output: github_document
 
 # Problem 1
 
-```{r}
+Import and clean the data; convert the entry variable to logical:
+
+```{r message = FALSE, warning = FALSE}
 library(tidyverse)
 
 nyc = 
@@ -25,32 +27,46 @@ nyc_clean
 
 The dataset contains `line` which shows 36 subway lines. `station_name` represents the names of the station. `station_latitude` and `station_longitude` represent the coordinates of the station. `route1` to `route11` show the subway routes served by the station, there are 11 routes. `entry` indicates whether entrance is allowed (TRUE/FALSE). `vending` indicates whether there is a vending machine (YES/NO). `entrance_type` is the type of entrance (e.g. `r unique(nyc_clean$entrance_type)`). `ada` inndicates whether the station is compliant with ADA standards (TRUE/FALSE). I selected relevant columns from the dataset and converted the `entry` variable to a logical variable for easier analysis. After cleaning, the dataset has `r nrow(nyc_clean)` rows and `r ncol(nyc_clean)` columns. This dataset is tidy as each column represents a variable and each row represents a single observation (an entrance/exit).
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 nyc_clean |>
   distinct(line, station_name) |>
   nrow()
 ```
 
-- There are 465 distinct stations.
+- There are **465** distinct stations.
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 nyc_clean |>
   filter(ada == "TRUE") |>
   distinct(line, station_name) |>
   nrow()
 ```
 
-- 84 stations are ADA compliant.
+- **84** stations are ADA compliant.
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 nyc_clean |>
   filter(vending == "NO") |>
   summarise(proportion = mean(entry))
+
+entry_true = 
+  nyc_clean |>
+  filter(vending == "NO" & entry == TRUE) |>
+  nrow()
+
+vending_no = 
+  nyc_clean |>
+  filter(vending == "NO") |>
+  nrow()
+
+entry_true / vending_no
 ```
 
-- 37.70% of station entrances / exits without vending allow entrance.
+- **37.70%** of station entrances / exits without vending allow entrance.
 
-```{r}
+Reformat data so that route number and route name are distinct variables:
+
+```{r message = FALSE, warning = FALSE}
 nyc_routes = 
   nyc_clean |>
   mutate(across(starts_with("route"), as.character)) |>
@@ -61,37 +77,41 @@ nyc_routes =
   filter(!is.na(route_number))
 
 nyc_routes
+```
 
+```{r message = FALSE, warning = FALSE}
 nyc_routes |>
   filter(route_number == "A") |>
   distinct(line, station_name) |>
   nrow()
+```
 
+- There are **60** distinct stations serve the A train.
+
+```{r message = FALSE, warning = FALSE}
 nyc_routes |>
   filter(route_number == "A", ada == "TRUE") |>
   distinct(line, station_name) |>
   nrow()
 ```
 
-- There are 60 distinct stations serve the A train.
-
-- Of the stations that serve the A train, 17 are ADA compliant.
+- Of the stations that serve the A train, **17** are ADA compliant.
 
 
 # Problem 2
 
-```{r}
+Import, clean, and tidy the data for Mr. Trash Wheel:
+
+```{r message = FALSE, warning = FALSE}
 library(readxl)
 library(dplyr)
 
 trash_wheel = 
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |>
-  select(dumpster = `Dumpster`, month = `Month`, year = `Year`, date = `Date`,
-      weight_tons = `Weight (tons)`, volume_cubic_yards = `Volume (cubic yards)`,
-      plastic_bottles = `Plastic Bottles`, polystyrene = `Polystyrene`,
-      cigarette_butts = `Cigarette Butts`, glass_bottles = `Glass Bottles`,
-      plastic_bags = `Plastic Bags`, wrappers = `Wrappers`,
-      sports_balls = `Sports Balls`, homes_powered = `Homes Powered*`) |>
+  read_excel("data/202409 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |>
+  janitor::clean_names() |>
+  select(dumpster, month, year, date, weight_tons, volume_cubic_yards, plastic_bottles, polystyrene,
+         cigarette_butts, glass_bottles, plastic_bags, wrappers, 
+         sports_balls, homes_powered) |>
   filter(!is.na(dumpster)) |>
   mutate(sports_balls = as.integer(round(sports_balls)), 
          homes_powered = (weight_tons * 500 / 30),
@@ -100,101 +120,154 @@ trash_wheel =
 trash_wheel
 ```
 
-```{r}
+Import, clean, and tidy the data for Professor Trash Wheel:
+
+```{r message = FALSE, warning = FALSE}
 prof_trash_wheel = 
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", skip = 1) |>
-  select(dumpster = `Dumpster`, month = `Month`, year = `Year`, date = `Date`,
-      weight_tons = `Weight (tons)`, volume_cubic_yards = `Volume (cubic yards)`,
-      plastic_bottles = `Plastic Bottles`, polystyrene = `Polystyrene`,
-      cigarette_butts = `Cigarette Butts`, glass_bottles = `Glass Bottles`,
-      plastic_bags = `Plastic Bags`, wrappers = `Wrappers`,
-      homes_powered = `Homes Powered*`) |>
+  read_excel("data/202409 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", skip = 1) |>
+  janitor::clean_names() |>
+  select(dumpster, month, year, date, weight_tons, volume_cubic_yards, plastic_bottles,
+         polystyrene, cigarette_butts, glass_bottles, plastic_bags, wrappers, homes_powered) |>
   filter(!is.na(dumpster)) |>
-  mutate(year = as.character(year))
+  mutate(year = as.character(year),
+         trash_wheel = "Professor Trash Wheel")
   
 prof_trash_wheel
+```
 
+Import, clean, and tidy the data for Gwynnda:
+
+```{r message = FALSE, warning = FALSE}
 gwynnda_trash_wheel = 
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", skip = 1) |>
-  select(dumpster = `Dumpster`, month = `Month`, year = `Year`, date = `Date`,
-      weight_tons = `Weight (tons)`, volume_cubic_yards = `Volume (cubic yards)`,
-      plastic_bottles = `Plastic Bottles`, polystyrene = `Polystyrene`,
-      cigarette_butts = `Cigarette Butts`, plastic_bags = `Plastic Bags`, 
-      wrappers = `Wrappers`, homes_powered = `Homes Powered*`) |>
+  read_excel("data/202409 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", skip = 1) |>
+  janitor::clean_names() |>
+  select(dumpster, month, year, date, weight_tons, volume_cubic_yards, plastic_bottles,
+         polystyrene, cigarette_butts, plastic_bags, wrappers, homes_powered) |>
   filter(!is.na(dumpster)) |>
-  mutate(year = as.character(year))
+  mutate(year = as.character(year),
+         trash_wheel = "Gwynnda Trash Wheel")
 
 gwynnda_trash_wheel
 ```
 
-```{r}
+Combine the datasets and produce a single tidy dataset:
+
+```{r message = FALSE, warning = FALSE}
 combine = 
   bind_rows(trash_wheel, prof_trash_wheel, gwynnda_trash_wheel)
 
 combine
 ```
 
-The combined dataset from the Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda trash wheels includes a total of `r nrow(combine)` observations, each representing a dumpster filled with trash removed from Baltimore's Inner Harbor. Key variables include the date (`date`, e.g. `r combine$date[1]`), the weight of trash collected (`weight_tons)`, e.g. `r combine$weight_tons[1]` tons), and the number of sports balls recovered (`sports_balls`, e.g. `r combine$sports_balls[1]`). Additionally, the dataset tracks the number of cigarette butts collected (`cigarette_butts`, e.g. `r combine$cigarette_butts[1]`). 
+The **Mr. Trash Wheel** dataset contains key variables such as dumpster number, collection date (e.g., `r trash_wheel$date[1]`), trash weight (e.g., `r trash_wheel$weight_tons[1]` tons), volume in cubic yards, and various types of collected debris, including plastic bottles, polystyrene, cigarette butts, and sports balls. The **Professor Trash Wheel** dataset captures similar information like the date (`r prof_trash_wheel$date[1]`), total weight of trash collected (e.g., `r prof_trash_wheel$weight_tons[1]` tons), and volume in cubic yards, alongside plastic bottles and cigarette butts. The **Gwynnda Trash Wheel** dataset provides detailed information on the trash collection efforts from this trash wheel in Baltimore's Inner Harbor. Key variables include the dumpster number, the month, year, and exact date of each collection (e.g., `r gwynnda_trash_wheel$date[1]`), the total weight of trash collected in tons (e.g., `r gwynnda_trash_wheel$weight_tons[1]` tons), and the volume of trash in cubic yards. It also tracks specific types of debris, including plastic bottles, polystyrene, cigarette butts, plastic bags, and wrappers.
 
-For Professor Trash Wheel, the total weight of trash collected across all available records is `r prof_trash_wheel |> summarize(total_weight = sum(weight_tons, na.rm = TRUE)) |> pull(total_weight)` tons. 
-In June 2022, Gwynnda collected a total of `r gwynnda_trash_wheel |> filter(format(date, "%Y-%m") == "2022-06") |> summarize(total_butts = sum(cigarette_butts, na.rm = TRUE)) |> pull(total_butts)` cigarette butts.
+The **combined** dataset from the Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda Trash Wheel includes a total of **`r nrow(combine)`** observations, each representing a dumpster filled with trash removed from Baltimore's Inner Harbor. Key variables include the date (`date`, e.g. `r combine$date[1]`), the weight of trash collected (`weight_tons)`, e.g. `r combine$weight_tons[1]` tons), and the number of sports balls recovered (`sports_balls`, e.g. `r combine$sports_balls[1]`). Additionally, the dataset tracks the number of cigarette butts collected (`cigarette_butts`, e.g. `r combine$cigarette_butts[1]`). 
+
+For Professor Trash Wheel, the total weight of trash collected across all available records is **`r combine |> filter(trash_wheel == "Professor Trash Wheel") |> summarize(total_weight = sum(weight_tons, na.rm = TRUE)) |> pull(total_weight)`** tons. 
+
+In June 2022, Gwynnda collected a total of **`r combine |> filter(trash_wheel == "Gwynnda Trash Wheel") |> filter(format(date, "%Y-%m") == "2022-06") |> summarize(total_butts = sum(cigarette_butts, na.rm = TRUE)) |> pull(total_butts)`** cigarette butts.
 
 
 # Problem 3
 
-```{r}
+Import, clean, and tidy the datasets:
+
+```{r message = FALSE, warning = FALSE}
 library(tidyverse)
 
-bakers <- read_csv("data/gbb_datasets/bakers.csv")
-bakes <- read_csv("data/gbb_datasets/bakes.csv")
-results <- read_csv("data/gbb_datasets/results.csv", skip = 2)
-viewers <- read_csv("data/gbb_datasets/viewers.csv")
+bakers =
+  read_csv("data/gbb_datasets/bakers.csv") |>
+  janitor::clean_names() |>
+  mutate(baker = word(baker_name, 1, sep = " "),
+         series = as.numeric(series))
 
+bakes = 
+  read_csv("data/gbb_datasets/bakes.csv") |>
+  janitor::clean_names() |>
+  mutate(series = as.numeric(series),
+         episode = as.numeric(episode))
 
-bakers <- bakers |>
-  mutate(Series = as.numeric(Series), `Baker Age` = as.numeric(`Baker Age`))
-
-merged_data <- bakes |>
-  left_join(bakers, by = c("Baker" = "Baker Name", "Series" = "Series")) |>
-  left_join(results, by = c("Baker" = "baker", "Series" = "series", "Episode" = "episode"))
-
-missing_data <- merged_data |>
-  summarise_all(~ sum(is.na(.)))
-
-final_data <- merged_data %>%
-  arrange(Series, Episode, Baker)
-
-write_csv(final_data, "data/gbb_datasets/final_data.csv")
-
-star_bakers <- merged_data |>
-  filter(Series >= 5 & result %in% c("STAR BAKER", "WINNER")) |>
-  select(Series, Episode, Baker, result) |>
-  arrange(Series, Episode)
-
-print(star_bakers)
-
-
-viewers_long <- viewers |>
-  pivot_longer(cols = starts_with("Series"), 
-               names_to = "Series", 
-               values_to = "Viewership") |>
-  mutate(Series = as.numeric(gsub("Series ", "", Series)))
-
-season_1_avg_viewership <- viewers_long |>
-  filter(Series == 1) |>
-  summarise(avg_viewership = mean(Viewership, na.rm = TRUE))
-
-season_5_avg_viewership <- viewers_long |>
-  filter(Series == 5) |>
-  summarise(avg_viewership = mean(Viewership, na.rm = TRUE))
-
-head(viewers_long, 10)
-
-print(season_1_avg_viewership)
-print(season_5_avg_viewership)
+results = 
+  read_csv("data/gbb_datasets/results.csv", skip = 2) |>
+  janitor::clean_names() |>
+  mutate(series = as.numeric(series),
+         episode = as.numeric(episode))
 ```
 
-The average viewership in Season 1 is 2.77; in Season 2 is 10.0.
+Use `anti_join` to compare the datasets and check for completeness and correctness across datasets:
+
+```{r message = FALSE, warning = FALSE}
+anti_join(bakers, bakes, by = c("series", "baker"))
+anti_join(bakes, bakers, by = c("series", "baker"))
+anti_join(bakers, results, by = c("series", "baker"))
+anti_join(results, bakers, by = c("series", "baker"))
+anti_join(bakes, results, by = c("series", "episode", "baker"))
+anti_join(results, bakes, by = c("series", "episode", "baker"))
+```
+
+Merge to create a single, combined dataset:
+
+```{r message = FALSE, warning = FALSE}
+merged = 
+  bakes |>
+  full_join(bakers, by = c("baker" = "baker", "series" = "series")) |>
+  full_join(results, by = c("baker" = "baker", "series" = "series", "episode" = "episode")) |>
+  arrange(series, episode, baker)
+
+write_csv(merged, "data/gbb_datasets/merged.csv")
+```
+
+**Data cleaning process:** I import the datasets and standardize column names by converting them to lowercase and replacing spaces with underscores. I extract the first name of the baker because first names are sufficient to identify bakers, and I create a new column `baker` to ensure the consistency across variable names. I also convert `series` and `episode` to numeric format to ensure consistency across datasets when merging. I check the completeness of the datasets using `anti_join()`. I choose `full_join()` to merge `bakers`, `bakes`, and `results` as all information from the three datasets can be included even if some fields are missing.
+
+**Final data discussion:** The final `merged` dataset includes information on each baker, their bakes, and their performance in each episode, along with details such as the `series`, `episode`, and `result`. Each row corresponds to a unique combination of `series`, `episode`, and `baker`. The dataset contains variables like the baker's name, the series and episode they participated in, the bake they completed, and their result (such as `STAR BAKER` or `ELIMINATED`).
+
+Create a table showing the star baker or winner of each episode in Seasons 5 through 10:
+
+```{r message = FALSE, warning = FALSE}
+star_bakers =
+  merged |>
+  filter(series >= 5 & result %in% c("STAR BAKER", "WINNER")) |>
+  select(series, episode, baker, result) |>
+  arrange(series, episode)
+
+knitr::kable(star_bakers)
+```
+
+Richard (season 5), Nadiya (season 6), Candice (season 7), Sophie (season 8), Rahul (season 9), and Steph (season 10) are the overall predictable winners. Nancy (season 5) is a surprise because Nancy only wins twice compared to Richard's 5 winning titles, and she is the final winner of the season. David (season 10) is also a surprise because he won the final episode of the season despite never having won the previous episodes during the season compared to Steph's 4 winning titles.
+
+Import, clean, tidy, and organize the viewership dataset:
+
+```{r message = FALSE, warning = FALSE}
+viewers =
+  read_csv("data/gbb_datasets/viewers.csv") |>
+  janitor::clean_names() |>
+  pivot_longer(cols = starts_with("series_"), 
+               names_to = "series",
+               values_to = "viewership") |>
+  mutate(series = as.numeric(gsub("series_", "", series)))
+```
+
+Show the first 10 rows of this dataset:
+
+```{r}
+head(viewers, 10)
+```
+
+Calculate the average viewership in Season 1 and Season 5:
+
+```{r}
+viewers |>
+  filter(series == 1) |>
+  summarise(`average viewership in season 1` = mean(viewership, na.rm = TRUE))
+
+viewers |>
+  filter(series == 5) |>
+  summarise(`average viewership in season 5` = mean(viewership, na.rm = TRUE))
+```
+
+- The average viewership in Season 1 is **2.77**.
+
+- The average viewership in Season 5 is **10.04**.
 
 
 
